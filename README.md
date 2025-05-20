@@ -25,23 +25,25 @@ To run this Project
    - npm install
    - npm run dev
 
-Open the localhost url in the browser
+6. Open the localhost url in the browser
 
-Credentials :- 
+7. Credentials :- 
 
-1. Admin :-
-   - Email :- admin@example.com
-   - Password :- admin123
+   a. Admin :-
+      - Email :- admin@example.com
+      - Password :- admin123
 
-2. Student1 :-
-   - Email :- student1@gmail.com
-   - Password :- 123456
+   b. Student1 :-
+      - Email :- student1@gmail.com
+      - Password :- 123456
 
-3. Instructor :-
-   - Email :- int1@gmail.com
-   - Password :- 123456
+   c. Instructor :-
+      - Email :- int1@gmail.com
+      - Password :- 123456
 
-4. Professor :-
-   - Email :- professor1@gmail.com
-   - Password :- 123456
+   d. Professor :-
+      - Email :- professor1@gmail.com
+      - Password :- 123456
+  
+     
 
