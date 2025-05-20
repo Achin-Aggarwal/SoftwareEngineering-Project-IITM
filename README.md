@@ -8,10 +8,10 @@ To run this Project
 
 3. Create Virtual Environment in Terminal 1 :-
 
-   cd soft-engg-project-jan-2025-se-Jan-16-development
-   cd Backend
-   python -m venv venv 
-   python -r requirement.txt
+   - cd soft-engg-project-jan-2025-se-Jan-16-development
+   - cd Backend
+   - python -m venv venv 
+   - python -r requirement.txt
 
 4. Activate venv and run Backend in Terminal 2 :-
    cd soft-engg-project-jan-2025-se-Jan-16-development
