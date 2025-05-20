@@ -1,0 +1,1267 @@
+openapi: 3.0.0
+info:
+  title: Education Platform API
+  version: 1.0.0
+  description: API documentation for authentication, student, admin, professor, instructor controls and chatbot.
+servers: 
+  - url: http://127.0.0.1:5000
+paths:
+
+  ### AUTHENTICATION ENDPOINTS ###
+  /login:
+    post:
+      summary: User Login
+      description: Login for Admin, Instructor, and Student users.
+      operationId: login
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: The username or email for login.
+                password:
+                  type: string
+                  description: The password for the user.
+      responses:
+        200:
+          description: Successful login with access and refresh tokens.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                    description: The access token for the user.
+                  refresh_token:
+                    type: string
+                    description: The refresh token for the user.
+                  username:
+                    type: string
+                    description: The username of the logged-in user.
+                  message:
+                    type: string
+                    description: Success message.
+        400:
+          description: Invalid credentials.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message.
+
+  /signup:
+    post:
+      summary: User Signup
+      description: User signup for Student and Instructor roles. Instructor signup is pending approval.
+      operationId: signup
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: The full name of the user.
+                username:
+                  type: string
+                  description: The username for the user.
+                email:
+                  type: string
+                  description: The email address of the user.
+                password:
+                  type: string
+                  description: The password for the user.
+                about:
+                  type: string
+                  description: Optional about section for the user.
+                role:
+                  type: string
+                  description: The role of the user (either 'Student' or 'Instructor').
+      responses:
+        200:
+          description: Successfully registered user.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Success message.
+        400:
+          description: Error message if any required field is missing or already exists.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message.
+
+  /refresh_token:
+    post:
+      summary: Refresh Access Token
+      description: Refresh the access token using the refresh token.
+      operationId: refreshToken
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refresh_token:
+                  type: string
+                  description: The refresh token to generate a new access token.
+      responses:
+        200:
+          description: New access token generated.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                    description: New access token.
+        401:
+          description: Invalid refresh token.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message.
+
+  /logout:
+    post:
+      summary: User Logout
+      description: Logs the user out of the application.
+      operationId: logout
+      tags:
+        - Authentication
+      responses:
+        200:
+          description: Logout successful.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Success message.
+        500:
+          description: Error occurred during logout.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message.
+
+
+
+  /top-support-queries:
+    get:
+      summary: Get top support queries in the past 7 days
+      description: Returns the top 5 most asked queries within the past 7 days.
+      operationId: getTopSupportQueries
+      tags:
+        - Admin
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of top queries with their count
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  top_queries:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        query:
+                          type: string
+                        count:
+                          type: integer
+
+  /assign-course/{course_id}/{student_id}:
+    post:
+      summary: Assign a course to a student
+      description: Admin assigns a course to a student by providing course ID and student ID.
+      operationId: assignCourse
+      tags:
+        - Admin
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: course_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: student_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '201':
+          description: Course assigned successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Invalid request (e.g., course or student not found)
+        '403':
+          description: Unauthorized (only admins can assign courses)
+        '500':
+          description: Internal server error
+          
+  /query-detail/{query_id}:
+    get:
+      summary: Get details of a specific query
+      description: Returns details of a query by its ID.
+      operationId: getQueryDetail
+      tags:
+        - Admin
+      parameters:
+        - name: query_id
+          in: path
+          required: true
+          description: The ID of the query to retrieve.
+          schema:
+            type: integer
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Query details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  query_text:
+                    type: string
+                  student_name:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '404':
+          description: Query not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+
+
+
+  /solve-query/{query_id}:
+    post:
+      summary: Solve a specific query
+      description: Admin can provide a solution to a query.
+      operationId: postSolveQuery
+      tags:
+        - Admin
+      parameters:
+        - name: query_id
+          in: path
+          required: true
+          description: The ID of the query to solve.
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                answer:
+                  type: string
+                  description: The solution to the query.
+              required:
+                - answer
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Query solved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  query_id:
+                    type: integer
+                  solver_id:
+                    type: integer
+                  answer:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '400':
+          description: Missing answer in request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '403':
+          description: Unauthorized to solve queries
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Query not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  error:
+                    type: string
+
+
+  /add-course:
+    post:
+      summary: Add a new course
+      description: Allows the admin to add a new course.
+      operationId: postAddCourse
+      tags:
+        - Admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+              required:
+                - name
+                - description
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Course added successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Missing course name or description
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '403':
+          description: Unauthorized to add courses
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  error:
+                    type: string
+
+
+
+  /edit-course/{course_id}:
+    put:
+      summary: Edit a specific course
+      description: Allows the admin to edit course details.
+      operationId: putEditCourse
+      tags:
+        - Admin
+      parameters:
+        - name: course_id
+          in: path
+          required: true
+          description: The ID of the course to edit.
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Course updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Invalid course details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '403':
+          description: Unauthorized to edit courses
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Course not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  error:
+                    type: string
+
+
+  /add-course-material/{course_id}:
+    post:
+      summary: Add course material
+      description: Allows the admin to add new material for a specific course.
+      operationId: postAddCourseMaterial
+      tags:
+        - Admin
+      parameters:
+        - name: course_id
+          in: path
+          required: true
+          description: The ID of the course for which the material is being added.
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                material_link:
+                  type: string
+              required:
+                - title
+                - material_link
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Course material added successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Missing title or material link
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '403':
+          description: Unauthorized to add course materials
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Course not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  error:
+                    type: string
+
+
+  /edit-course-material/{material_id}:
+    put:
+      summary: Edit course material
+      description: Allows the admin to edit existing course material.
+      operationId: putEditCourseMaterial
+      tags:
+        - Admin
+      parameters:
+        - name: material_id
+          in: path
+          required: true
+          description: The ID of the material to edit.
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                material_link:
+                  type: string
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Course material updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Invalid material details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '403':
+          description: Unauthorized to edit course materials
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Course material not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  error:
+                    type: string
+
+
+
+  /student-profile:
+    get:
+      summary: Retrieve student profile details
+      description: Fetches the details of the currently authenticated student, including personal info and last login time.
+      tags:
+        - Student
+      security:
+        - jwt: []
+      responses:
+        200:
+          description: Student profile details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    description: The student's ID
+                  name:
+                    type: string
+                    description: The student's full name
+                  username:
+                    type: string
+                    description: The student's username
+                  email:
+                    type: string
+                    description: The student's email
+                  role:
+                    type: string
+                    description: The role of the user (Student)
+                  last_login:
+                    type: string
+                    format: date-time
+                    description: Last login timestamp
+        404:
+          description: Student not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Student not found.
+
+  /student-dashboard:
+    get:
+      summary: Retrieve student dashboard details
+      description: Fetches all the information related to the student's enrolled courses, assignments, materials, chatbot history, and queries.
+      tags:
+        - Student
+      security:
+        - jwt: []
+      responses:
+        200:
+          description: Student dashboard data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  courses:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          description: The course ID
+                        name:
+                          type: string
+                          description: The name of the course
+                        description:
+                          type: string
+                          description: A brief description of the course
+                        created_at:
+                          type: string
+                          format: date-time
+                          description: The timestamp when the course was created
+                        assignments:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: integer
+                                description: The assignment ID
+                              week_number:
+                                type: integer
+                                description: The week number of the assignment
+                              created_at:
+                                type: string
+                                format: date-time
+                                description: The timestamp when the assignment was created
+                        materials:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: integer
+                                description: The course material ID
+                              title:
+                                type: string
+                                description: The title of the material
+                              file_url:
+                                type: string
+                                description: The URL to the course material file
+                              uploaded_at:
+                                type: string
+                                format: date-time
+                                description: The timestamp when the material was uploaded
+                  chatbot_history:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        query:
+                          type: string
+                          description: The student's query to the chatbot
+                        response:
+                          type: string
+                          description: The chatbot's response to the query
+                        timestamp:
+                          type: string
+                          format: date-time
+                          description: The timestamp when the query was made
+                  queries:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          description: The issue query ID
+                        details:
+                          type: string
+                          description: The details of the student's query
+                        created_at:
+                          type: string
+                          format: date-time
+                          description: The timestamp when the query was created
+        404:
+          description: Student not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Student not found.
+
+
+
+  /lesson:
+    post:
+      summary: Add a new lesson (Supplementary Material)
+      description: Adds a new lesson (supplementary material) to a specific course.
+      tags:
+        - Instructor
+      security:
+        - jwt: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                course_id:
+                  type: integer
+                  description: The ID of the course
+                material_type:
+                  type: string
+                  description: Type of the material (e.g., video, pdf, etc.)
+                content:
+                  type: string
+                  description: Content of the supplementary material
+              required:
+                - course_id
+                - material_type
+                - content
+      responses:
+        201:
+          description: Lesson added successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Lesson added successfully
+        400:
+          description: Missing required fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Missing required fields
+
+  /assignment:
+    post:
+      summary: Add a new assignment
+      description: Adds a new assignment to a specific course.
+      tags:
+        - Instructor
+      security:
+        - jwt: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                course_id:
+                  type: integer
+                  description: The ID of the course
+                week_number:
+                  type: integer
+                  description: The week number for the assignment
+                assignment_link:
+                  type: string
+                  description: Link to the assignment
+                description:
+                  type: string
+                  description: Description of the assignment
+              required:
+                - course_id
+                - week_number
+                - assignment_link
+                - description
+      responses:
+        201:
+          description: Assignment added successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Assignment added successfully
+        400:
+          description: Missing required fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Missing required fields
+
+  /livesession:
+    post:
+      summary: Add a new live session
+      description: Adds a new live session for a specific course.
+      tags:
+        - Instructor
+      security:
+        - jwt: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                course_id:
+                  type: integer
+                  description: The ID of the course
+                yt_link:
+                  type: string
+                  description: Link to the YouTube live session
+                description:
+                  type: string
+                  description: Description of the live session
+              required:
+                - course_id
+                - yt_link
+                - description
+      responses:
+        201:
+          description: Live session added successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Live session added successfully
+        400:
+          description: Missing required fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Missing required fields
+
+
+
+
+  /pending-instructors:
+    get:
+      summary: Retrieve all pending instructor requests
+      description: Fetches all instructor requests that are pending approval from the professor.
+      tags:
+        - Professor
+      security:
+        - jwt: []
+      responses:
+        200:
+          description: List of pending instructor requests
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    example: 3
+                  pending_instructors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          description: The ID of the instructor request
+                        instructor_id:
+                          type: integer
+                          description: The ID of the instructor
+                        status:
+                          type: string
+                          description: The status of the request (Pending)
+                        created_at:
+                          type: string
+                          format: date-time
+                          description: Date when the request was created
+        404:
+          description: Professor not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Professor not found
+
+  /approve-instructor/{request_id}:
+    put:
+      summary: Approve or reject an instructor request
+      description: The professor can approve or reject a pending instructor request.
+      tags:
+        - Professor
+      security:
+        - jwt: []
+      parameters:
+        - name: request_id
+          in: path
+          required: true
+          description: The ID of the instructor request
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [Approved, Rejected]
+                  description: The status of the instructor request
+              required:
+                - status
+      responses:
+        200:
+          description: Instructor request approved or rejected successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Instructor request approved successfully
+        400:
+          description: Invalid status or missing fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Invalid status, use 'Approved' or 'Rejected'
+        404:
+          description: Instructor request or professor not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Instructor request not found
+
+  /solved-issues:
+    get:
+      summary: Retrieve all solved issues
+      description: Fetches all issues that have been solved by a professor.
+      tags:
+        - Professor
+      responses:
+        200:
+          description: List of solved issues
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    example: 5
+                  solved_issues:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        issue_id:
+                          type: integer
+                          description: The ID of the issue
+                        details:
+                          type: string
+                          description: Description of the issue
+                        created_at:
+                          type: string
+                          format: date-time
+                          description: When the issue was created
+                        solver_id:
+                          type: integer
+                          description: The ID of the solver (professor)
+                        answer:
+                          type: string
+                          description: The answer provided for the issue
+                        solved_at:
+                          type: string
+                          format: date-time
+                          description: When the issue was solved
+
+  /pending-issues:
+    get:
+      summary: Retrieve all pending issues
+      description: Fetches all issues that have not yet been solved by a professor.
+      tags:
+        - Professor
+      responses:
+        200:
+          description: List of pending issues
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    example: 2
+                  pending_issues:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        issue_id:
+                          type: integer
+                          description: The ID of the issue
+                        details:
+                          type: string
+                          description: Description of the issue
+                        created_at:
+                          type: string
+                          format: date-time
+                          description: When the issue was created
+        404:
+          description: No pending issues found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: No pending issues found
+
+
+
+  /chatbot:
+    post:
+      summary: Interact with the chatbot for educational hints and resources
+      description: Submits a query to the chatbot, retrieves relevant documents, and provides a hint and resource guidance based on the retrieved context.
+      tags:
+        - Chatbot
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                query:
+                  type: string
+                  description: The student's query to the chatbot.
+                  example: "What is machine learning?"
+      responses:
+        200:
+          description: Successful response with the chatbot's answer, including relevant resources.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  query:
+                    type: string
+                    description: The student's original query
+                  response:
+                    type: string
+                    description: The chatbot's response based on the context provided
+                  references:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        subject:
+                          type: string
+                          description: The subject of the referenced document
+                        week:
+                          type: string
+                          description: The week number of the referenced document
+                        doc_type:
+                          type: string
+                          description: The type of document (e.g., lecture notes, readings)
+        400:
+          description: Bad request, query is empty.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Query cannot be empty"
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message returned when an exception occurs
+                    example: "Error message"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    jwt:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  
+
+
+

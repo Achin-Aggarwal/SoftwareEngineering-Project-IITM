@@ -1,0 +1,36 @@
+{
+  "courses": [
+    {
+      "id": 1,
+      "subject_name": "Software Engineering Course",
+      "marks": {
+        "Week 1 Assignment": 100,
+        "Week 2 Assignment": 92
+      }
+    },
+    {
+      "id": 2,
+      "subject_name": "Modern Application Development - 2",
+      "marks": {
+        "Week 1 Assignment": 85,
+        "Week 2 Assignment": 78
+      }
+    },
+    {
+      "id": 3,
+      "subject_name": "Business Data Management Course",
+      "marks": {
+        "Week 1 Assignment": 90,
+        "Week 2 Assignment": 88
+      }
+    },
+    {
+      "id": 4,
+      "subject_name": "Machine Learning Practice Course",
+      "marks": {
+        "Week 1 Assignment": 95,
+        "Week 2 Assignment": 89
+      }
+    }
+  ]
+}
