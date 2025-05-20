@@ -2,32 +2,40 @@
 
 To run this Project
 
-1. Download Zip
 
-2. Extract Zip
+1. Download Zip and Extract the Zip
 
-3. Create Virtual Environment in Terminal 1 :-
+
+2. In Backend Folder -> In Applications -> In .env
+   - Add Your Google ApI Key
+   - Add Your Google Cse ID
+
+
+4. Create Virtual Environment in Terminal 1 :-
 
    - cd soft-engg-project-jan-2025-se-Jan-16-development
    - cd Backend
    - python -m venv venv 
    - python -r requirement.txt
 
-4. Activate venv and run Backend in Terminal 2 :-
+
+5. Activate venv and run Backend in Terminal 2 :-
    - cd soft-engg-project-jan-2025-se-Jan-16-development
    - cd Backend
    - source venv/bin/activate
    - python3 main.py
 
-5. Run Frontend in Terminal 3 :-
+
+6. Run Frontend in Terminal 3 :-
    - cd soft-engg-project-jan-2025-se-Jan-16-development
    - cd Frontend
    - npm install
    - npm run dev
 
-6. Open the localhost url in the browser
+7. Open the localhost url in the browser
+   
 
-7. Credentials :- 
+8. Credentials :- 
 
    a. Admin :-
       - Email :- admin@example.com
@@ -44,6 +52,9 @@ To run this Project
    d. Professor :-
       - Email :- professor1@gmail.com
       - Password :- 123456
+
+  
+   
   
      
 
